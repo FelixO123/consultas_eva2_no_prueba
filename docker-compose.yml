@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  front-despacho:
+    build:
+      context: ./front_despacho
+      dockerfile: Dockerfile
+    container_name: front-despacho
+    ports:
+      - "80:80" # Expone el puerto estándar HTTP (IE4)
+    networks:
+      - innova-network
+
+networks:
+  innova-network:
+    external: true # Indica que usará la red creada por el backend si están en la misma EC2
