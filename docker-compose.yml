@@ -1,16 +1,62 @@
 version: '3.8'
 
 services:
-  front-despacho:
-    build:
-      context: ./front_despacho
+  # Base de Datos para el microservicio de Ventas
+  db-ventas:
+    image: mysql:8.0
+    container_name: db-ventas
+    restart: always
+    environment:
+      MYSQL_DATABASE: db_ventas
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - v_ventas_data:/var/lib/mysql # Persistencia (IE2)
+    networks:
+      - innova-network
+
+  # Base de Datos para el microservicio de Despachos
+  db-despachos:
+    image: mysql:8.0
+    container_name: db-despachos
+    restart: always
+    environment:
+      MYSQL_DATABASE: db_despacho
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - v_despacho_data:/var/lib/mysql # Persistencia (IE2)
+    networks:
+      - innova-network
+
+  # Microservicio Ventas
+  back-ventas:
+    build: 
+      context: ./back-Ventas_SpringBoot
       dockerfile: Dockerfile
-    container_name: front-despacho
+    container_name: back-ventas
     ports:
-      - "80:80" # Expone el puerto estándar HTTP (IE4)
+      - "8081:8080"
+    depends_on:
+      - db-ventas
+    networks:
+      - innova-network
+
+  # Microservicio Despachos
+  back-despachos:
+    build:
+      context: ./back-Despachos_SpringBoot
+      dockerfile: Dockerfile
+    container_name: back-despachos
+    ports:
+      - "8082:8080"
+    depends_on:
+      - db-despachos
     networks:
       - innova-network
 
 networks:
   innova-network:
-    external: true # Indica que usará la red creada por el backend si están en la misma EC2
+    driver: bridge # Red interna para comunicación entre contenedores (IE6)
+
+volumes:
+  v_ventas_data: # Definición de volúmenes nombrados (IE2)
+  v_despacho_data:
